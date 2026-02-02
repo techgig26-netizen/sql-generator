@@ -63,16 +63,19 @@ function generateSQL() {
 
     // Find action
     let action = "";
-    ["select", "insert", "update", "delete"].forEach(a => {
+    ["select", "insert", "update", "delete", "create"].forEach(a => {
         if (words.includes(a)) action = a;
     });
 
-    // Find table name (simple heuristic: after 'into' or 'from')
+    // Find table name (after INTO, FROM, or after CREATE TABLE)
     let table = "table_name";
     const intoIndex = words.indexOf("into");
     const fromIndex = words.indexOf("from");
+    const createIndex = words.indexOf("table");
+
     if (intoIndex !== -1 && words[intoIndex + 1]) table = words[intoIndex + 1];
     else if (fromIndex !== -1 && words[fromIndex + 1]) table = words[fromIndex + 1];
+    else if (createIndex !== -1 && words[createIndex + 1]) table = words[createIndex + 1];
 
     let sql = "";
 
@@ -89,13 +92,21 @@ function generateSQL() {
         case "delete":
             sql = `DELETE FROM ${table} WHERE condition;`;
             break;
+        case "create":
+            sql = `CREATE TABLE ${table} (
+    id INT PRIMARY KEY,
+    column1 VARCHAR(255),
+    column2 VARCHAR(255)
+);`;
+            break;
         default:
-            sql = `-- Unable to detect SQL action. Try typing SELECT, INSERT, UPDATE, or DELETE.`;
+            sql = `-- Unable to detect SQL action. Try SELECT, INSERT, UPDATE, DELETE, or CREATE TABLE.`;
     }
 
     output.innerText = sql;
 }
 </script>
+
 
 </body>
 </html>
