@@ -48,10 +48,9 @@
 
     <pre id="output">Your SQL will appear here...</pre>
 </div>
-
 <script>
 function generateSQL() {
-    const input = document.getElementById("input").value.toLowerCase();
+    const input = document.getElementById("input").value.toLowerCase().trim();
     const output = document.getElementById("output");
 
     if (!input) {
@@ -59,17 +58,44 @@ function generateSQL() {
         return;
     }
 
-    // Simple demo logic
-    if (input.includes("select") && input.includes("where")) {
-        output.innerText = "SELECT * FROM table_name WHERE condition;";
-    } else if (input.includes("select")) {
-        output.innerText = "SELECT * FROM table_name;";
-    } else {
-        output.innerText = "Example SQL:\nSELECT column FROM table WHERE condition;";
+    // Split words
+    const words = input.split(" ");
+
+    // Find action
+    let action = "";
+    ["select", "insert", "update", "delete"].forEach(a => {
+        if (words.includes(a)) action = a;
+    });
+
+    // Find table name (simple heuristic: after 'into' or 'from')
+    let table = "table_name";
+    const intoIndex = words.indexOf("into");
+    const fromIndex = words.indexOf("from");
+    if (intoIndex !== -1 && words[intoIndex + 1]) table = words[intoIndex + 1];
+    else if (fromIndex !== -1 && words[fromIndex + 1]) table = words[fromIndex + 1];
+
+    let sql = "";
+
+    switch (action) {
+        case "select":
+            sql = `SELECT * FROM ${table};`;
+            break;
+        case "insert":
+            sql = `INSERT INTO ${table} (column1, column2) VALUES (value1, value2);`;
+            break;
+        case "update":
+            sql = `UPDATE ${table} SET column1 = value1 WHERE condition;`;
+            break;
+        case "delete":
+            sql = `DELETE FROM ${table} WHERE condition;`;
+            break;
+        default:
+            sql = `-- Unable to detect SQL action. Try typing SELECT, INSERT, UPDATE, or DELETE.`;
     }
+
+    output.innerText = sql;
 }
 </script>
-
 
 </body>
 </html>
