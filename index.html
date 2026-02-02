@@ -31,6 +31,7 @@
             background: #eee;
             padding: 10px;
             margin-top: 10px;
+            white-space: pre-wrap;
         }
     </style>
 </head>
@@ -40,12 +41,51 @@
     <h2>English → SQL Generator</h2>
     <p>Describe your query in English:</p>
 
-    <textarea rows="4" placeholder="Example: select all students with marks above 80"></textarea>
+    <textarea id="input" rows="4"
+        placeholder="Example: select all students with marks above 80"></textarea>
 
-    <button>Generate SQL</button>
+    <button onclick="generateSQL()">Generate SQL</button>
 
-    <pre>Your SQL will appear here...</pre>
+    <pre id="output">Your SQL will appear here...</pre>
 </div>
+
+<script>
+async function generateSQL() {
+    const input = document.getElementById("input").value;
+    const output = document.getElementById("output");
+
+    if (!input) {
+        output.innerText = "Please enter a description.";
+        return;
+    }
+
+    output.innerText = "Generating SQL...";
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer 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"
+        },
+        body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [
+                {
+                    role: "system",
+                    content: "Convert English to SQL query. Only return SQL."
+                },
+                {
+                    role: "user",
+                    content: input
+                }
+            ]
+        })
+    });
+
+    const data = await response.json();
+    output.innerText = data.choices[0].message.content;
+}
+</script>
 
 </body>
 </html>
